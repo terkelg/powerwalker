@@ -16,21 +16,19 @@ const readdir = promisify(fs.readdir);
  * @param {String} [options.cwd='.'] Define custom current working directory
  * @returns {Array} List of files and directories
  */
-async function walk(dir, {maxdepth = Infinity, flatten = true, filesonly = false, relative = true, cwd = '.'} = {}) {
+async function walk(dir, {maxdepth = Infinity, flatten = true, filesonly = false, relative = true, cwd = __dirname} = {}) {
     const format = file => relative ? path.relative(cwd, file) : file;
 
     async function walker(dir, depth = 0) {
         if (dir === '') dir = cwd;
         if (depth >= maxdepth) return format(dir);
-        const isDir = (await stat(dir)).isDirectory();
-        if (isDir) {
+        if ((await stat(dir)).isDirectory()) {
             depth++;
             const files = await readdir(dir);
-            const arr = await Promise.all(files.map(async file => walker(path.join(dir, file), depth)))
+            const arr = await Promise.all(files.map(async file => walker(path.join(dir, file), depth)));
             if (filesonly) return arr
             if (cwd === dir && relative) {
-                const prev = path.parse(dir).dir;
-                const base = path.parse(dir).base;
+                const {dir:prev, base} = path.parse(dir);
                 return arr.concat(path.relative(prev, base));
             }
             return arr.concat(format(dir));

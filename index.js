@@ -31,8 +31,12 @@ async function walk(dir, {maxdepth = Infinity, flatten = true, filesonly = false
             const arr = await Promise.all(files.map(async file => walker(path.join(dir, file), depth)));
             if (filesonly) return arr
             if (cwd === dir && relative) {
+                console.log('CWD == DIR', dir, cwd, files);
                 const {dir:prev, base} = path.parse(dir);
-                return arr.concat(path.relative(prev, base));
+                console.log(path.relative(prev,base));
+                let res = arr.concat(path.relative(prev, base));
+                console.log(res);
+                return res;
             }
             return arr.concat(format(dir));
         }

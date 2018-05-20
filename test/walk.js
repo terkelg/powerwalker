@@ -5,7 +5,6 @@ const { unixify, order } = require('./helpers');
 
 const isMatch = async (t, dir, expect, opts) => {
     let files = order(unixify(await walk(dir, opts)));
-    console.log(files);
     if (Array.isArray(expect)) {
         t.equal(files.length, expect.length, 'find all files');
         t.deepEqual(files, order(expect), 'matches');

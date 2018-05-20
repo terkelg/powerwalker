@@ -1,6 +1,6 @@
 {
   "name": "powerwalker",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "walk directories recursively",
   "homepage": "https://github.com/terkelg/powerwalker",
   "main": "index.js",

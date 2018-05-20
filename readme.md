@@ -12,7 +12,7 @@
     <img src="https://img.shields.io/travis/terkelg/powerwalker.svg" alt="travis" />
   </a>
   <a href="https://ci.appveyor.com/project/terkelg/powerwalker/branch/master">
-    <img src="https://ci.appveyor.com/api/projects/status/qe8sm2c7mwm0hxud/branch/master?svg=true" alt="AppVeyor"/>
+    <img src="https://ci.appveyor.com/api/projects/status/svaorudqednb1tyi/branch/master?svg=true" alt="AppVeyor"/>
   </a>
   <a href="https://npmjs.org/package/powerwalker">
     <img src="https://img.shields.io/npm/dm/powerwalker.svg" alt="downloads" />

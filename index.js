@@ -17,14 +17,9 @@ const readdir = promisify(fs.readdir);
  * @returns {Array} List of files and directories
  */
 async function walk(dir, {maxdepth = Infinity, flatten = true, filesonly = false, relative = true, cwd = '.'} = {}) {
-    cwd = path.resolve(cwd);
     const format = file => relative ? path.relative(cwd, file) : file;
-
     async function walker(dir, depth = 0) {
-        if (dir === '') {
-            console.log('empty', depth);
-            dir = cwd;
-        }
+        if (dir === '') dir = cwd;
         if (depth >= maxdepth) return format(dir);
         if ((await stat(dir)).isDirectory()) {
             depth++;
@@ -32,23 +27,16 @@ async function walk(dir, {maxdepth = Infinity, flatten = true, filesonly = false
             const arr = await Promise.all(files.map(async file => walker(path.join(dir, file), depth)));
             if (filesonly) return arr
             if (cwd === dir && relative) {
-                console.log('CWD == DIR', dir, cwd);
                 const {dir:prev, base} = path.parse(dir);
-                console.log('relative', path.relative(prev,base));
-                console.log('relative cwd 1:', path.relative(cwd,base));
-                console.log('relative cwd 2:', path.relative(cwd,prev));
-                console.log('relative cwd 3:', cwd, ' - ', prev, ' - ', base);
-                let res = arr.concat(path.relative(prev, base) || path.relative(cwd, base));
-                return res;
+                return arr.concat(path.relative(prev, base) || path.relative(cwd, base));
             }
             return arr.concat(format(dir));
         }
         return format(dir);
     }
-
-    const joined = path.isAbsolute(dir) ? dir : path.join(cwd, dir);
-    const p = relative ? joined : path.resolve(joined);
-    return flatten ? flat(await walker(p)) : walker(p);
+    const joined = path.isAbsolute(dir) ? dir : path.join(cwd=path.resolve(cwd), dir);
+    const start = relative ? joined : path.resolve(joined);
+    return flatten ? flat(await walker(start)) : walker(start);
 }
 
 module.exports = walk;

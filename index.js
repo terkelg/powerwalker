@@ -20,7 +20,10 @@ async function walk(dir, {maxdepth = Infinity, flatten = true, filesonly = false
     const format = file => relative ? path.relative(cwd, file) : file;
 
     async function walker(dir, depth = 0) {
-        if (dir === '') dir = cwd;
+        if (dir === '') {
+            console.log('empty', depth);
+            dir = cwd;
+        }
         if (depth >= maxdepth) return format(dir);
         if ((await stat(dir)).isDirectory()) {
             depth++;

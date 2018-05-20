@@ -1,7 +1,16 @@
 const fs = require('fs');
 const walk = require('../');
 const test = require('tape');
-const { unixify } = require('./helpers');
+const { unixify, order } = require('./helpers');
+
+const isMatch = async (t, dir, expect, opts) => {
+    let files = order(unixify(await walk(dir, opts)));
+    if (Array.isArray(expect)) {
+        t.equal(files.length, expect.length, 'find all files');
+        t.deepEqual(files, order(expect), 'matches');
+    }
+    return files;
+}
 
 test('standard', async t => {
     t.plan(3);
@@ -11,9 +20,6 @@ test('standard', async t => {
 });
 
 test('list', async t => {
-    t.plan(2);
-
-    const files = await walk('test/fixtures/a');
     const expect = [
         'test/fixtures/a/b/c/file_c1.js',
         'test/fixtures/a/b/c',
@@ -23,25 +29,18 @@ test('list', async t => {
         'test/fixtures/a/file_a2.js',
         'test/fixtures/a'
     ];
-
-    t.equal(files.length, 7, 'find all files');
-    t.deepEqual(unixify(files), expect, 'return array with files');
+    isMatch(t, 'test/fixtures/a', expect);
+    t.end();
 });
 
 test('find', async t => {
-    t.plan(3);
-
-    const files = await walk('test/fixtures');
-    t.equal(files.length, 13, 'find all files and folders');
-    t.equal(unixify(files).includes('test/fixtures/.hiddenfile'), true, 'find hidden files');
-    t.equal(unixify(files).includes('test/fixtures/.hiddendir/file.js'), true, 'find content in hidden dirs'
-    );
+    let match = await isMatch(t, 'test/fixtures');
+    t.equal(match.includes('test/fixtures/.hiddenfile'), true, 'find hidden files');
+    t.equal(match.includes('test/fixtures/.hiddendir/file.js'), true, 'find content in hidden dirs');
+    t.end();
 });
 
 test('option maxdepth', async t => {
-    t.plan(2);
-
-    const files = await walk('test/fixtures', { maxdepth: 1 });
     const expect = [
         'test/fixtures/.hiddendir',
         'test/fixtures/.hiddenfile',
@@ -50,15 +49,11 @@ test('option maxdepth', async t => {
         'test/fixtures/readme.md',
         'test/fixtures'
     ];
-
-    t.equal(files.length, 6, 'find all files, with maxdepth = 1');
-    t.deepEqual(unixify(files), expect, 'return array with files');
+    await isMatch(t, 'test/fixtures', expect, { maxdepth:1 });
+    t.end();
 });
 
 test('option flatten', async t => {
-    t.plan(2);
-
-    const files = await walk('test/fixtures/a/b', { flatten: false });
     const expect = [
         [
             'test/fixtures/a/b/c/file_c1.js',
@@ -67,27 +62,20 @@ test('option flatten', async t => {
         'test/fixtures/a/b/file_b1.js',
         'test/fixtures/a/b'
     ]
-
-    t.equal(files.length, 3, 'contains three elements');
-    t.deepEqual(unixify(files), expect, 'contains nested arrays');
+    await isMatch(t, 'test/fixtures/a/b', expect, { flatten:false });
+    t.end();
 });
 
-test('@robin/walk: option filesonly', async t => {
-    t.plan(2);
-
-    const files = await walk('test/fixtures/a/b', { filesonly: true });
+test('option filesonly', async t => {
     const expect = [
         'test/fixtures/a/b/c/file_c1.js',
         'test/fixtures/a/b/file_b1.js',
     ]
-
-    t.equal(files.length, 2, 'contains two elements');
-    t.deepEqual(unixify(files), expect, 'contains nested arrays');
+    await isMatch(t, 'test/fixtures/a/b', expect, { filesonly:true });
+    t.end();
 });
 
 test('option relative', async t => {
-    t.plan(5);
-
     const expect = [
         'test/fixtures/a/b/c/file_c1.js',
         'test/fixtures/a/b/c',
@@ -95,33 +83,26 @@ test('option relative', async t => {
         'test/fixtures/a/b'
     ]
 
-    const files = await walk('test/fixtures/a/b', { relative: true });
-
-    t.equal(files.length, expect.length, 'contains four elements');
-    unixify(files).forEach((file, i) => {
-        t.equal(file.endsWith(expect[i]), true)
+    const relative = await isMatch(t, 'test/fixtures/a/b', expect, { relative:true });
+    const abs = await isMatch(t, 'test/fixtures/a/b', null, { relative:false });
+    abs.forEach((file, i) => {
+        t.equal(file.endsWith(relative[i]), true);
     });
+    t.end();
 });
 
 test('option cwd', async t => {
-    t.plan(2);
-
     const expect = [
         'a/b/c/file_c1.js',
         'a/b/c',
         'a/b/file_b1.js',
         'a/b'
     ]
-
-    const files = await walk('a/b', { cwd: 'test/fixtures' });
-
-    t.equal(files.length, expect.length, 'contains four elements');
-    t.deepEqual(unixify(files), expect, 'contains path relative to cwd');
+    await isMatch(t, 'a/b', expect, { cwd:'test/fixtures' });
+    t.end();
 });
 
 test('option cwd, relative backwards', async t => {
-    t.plan(2);
-
     const expect = [
         'c/file_c1.js',
         'c',
@@ -131,9 +112,6 @@ test('option cwd, relative backwards', async t => {
         '../file_a2.js',
         '..'
     ]
-
-    const files = await walk('../', { cwd: 'test/fixtures/a/b' });
-
-    t.equal(files.length, expect.length, 'contains seven elements');
-    t.deepEqual(unixify(files), expect, 'contains path relative to cwd');
+    await isMatch(t, '../', expect, { cwd:'test/fixtures/a/b' });
+    t.end();
 });

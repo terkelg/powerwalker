@@ -7,4 +7,14 @@ function unixify(arr) {
     }) : arr;
 }
 
-module.exports = { unixify };
+function toIgnore(str) {
+  return !str.includes('.DS_Store');
+}
+
+function order(arr) {
+  return arr.filter(str => {
+      return Array.isArray(str) ? order(str) : toIgnore(str);
+  }).sort();
+}
+
+module.exports = { unixify, order };

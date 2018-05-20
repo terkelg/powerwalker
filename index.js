@@ -31,11 +31,13 @@ async function walk(dir, {maxdepth = Infinity, flatten = true, filesonly = false
             const arr = await Promise.all(files.map(async file => walker(path.join(dir, file), depth)));
             if (filesonly) return arr
             if (cwd === dir && relative) {
-                console.log('CWD == DIR', dir, cwd, files);
+                console.log('CWD == DIR', dir, cwd);
                 const {dir:prev, base} = path.parse(dir);
-                console.log(path.relative(prev,base));
-                let res = arr.concat(path.relative(prev, base));
-                console.log(res);
+                console.log('relative', path.relative(prev,base));
+                console.log('relative cwd 1:', path.relative(cwd,base));
+                console.log('relative cwd 2:', path.relative(cwd,prev));
+                console.log('relative cwd 3:', cwd, ' - ', prev, ' - ', base);
+                let res = arr.concat(path.relative(prev, base) || path.relative(cwd, base));
                 return res;
             }
             return arr.concat(format(dir));

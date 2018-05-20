@@ -16,7 +16,8 @@ const readdir = promisify(fs.readdir);
  * @param {String} [options.cwd='.'] Define custom current working directory
  * @returns {Array} List of files and directories
  */
-async function walk(dir, {maxdepth = Infinity, flatten = true, filesonly = false, relative = true, cwd = __dirname} = {}) {
+async function walk(dir, {maxdepth = Infinity, flatten = true, filesonly = false, relative = true, cwd = '.'} = {}) {
+    cwd = path.resolve(cwd);
     const format = file => relative ? path.relative(cwd, file) : file;
 
     async function walker(dir, depth = 0) {

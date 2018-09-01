@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/terkelg/powerwalker/raw/master/powerwalker.png" alt="Power Walker" width="300" height="300" />
+  <img src="https://github.com/terkelg/powerwalker/raw/master/powerwalker.png" alt="Power Walker" width="300" />
 </p>
 
 <h1 align="center">Power Walker</h1>
